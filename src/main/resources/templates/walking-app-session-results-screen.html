@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+	  xmlns:th="http://www.thymeleaf.org"
+	  xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+<meta charset="UTF-8">
+<title>Walking App Session Results</title>
+
+<script src="https://code.highcharts.com/highcharts.js"></script>
+<script type="text/javascript" th:inline="javascript">
+    
+    var resultsJson = [[${walkingAppResultsDTO}]];
+    var successRateArray = [];
+    var sessionCount = [];
+    
+    for (let i=0; i<resultsJson.length; i++) {
+    	successRateArray.push(resultsJson[i].successRate);
+    	sessionCount.push(i);
+    }
+    
+    document.addEventListener('DOMContentLoaded', function () {
+        const chart = Highcharts.chart('container', {
+            chart: {
+                type: 'line'
+            },
+            title: {
+                text: 'Walking Improvement Chart'
+            },
+            xAxis: {
+            	title: 'Session',
+                categories: sessionCount
+            },
+            yAxis: {
+            	title: {
+            		text: 'Success %'
+            	}
+            },
+            series: [{
+            	data: successRateArray
+            }]
+        });
+    });
+       
+</script>
+
+</head>
+
+	<body>
+	
+	<a th:href="@{/}">Back to Main Screen</a>
+	
+	<!-- Graph to display progress -->
+	<div id="container" style="width:100%; height:400px;"></div>
+	
+	<!-- 	Session data -->
+		<h1>Success Rate: </h1>
+		<h1 th:text="${walkingAppResult.successRate}"></h1>
+		<h1>Session Time: </h1>
+		<h1 th:text="${walkingAppResult.sessionTime}"></h1>
+		<h1>Date: </h1>
+		<h1 th:text="${walkingAppResult.sessionDate}"></h1>
+	
+<!-- 	Previous sessions data	 -->
+	<table>
+	  <tr>
+	  	<th>#</th>
+	    <th>Success Rate</th>
+	    <th>Session Time</th>
+	    <th>Session Date</th>
+	  </tr>
+	  <tr th:each="walkingAppResultDTO : ${walkingAppResultsDTO}">
+	    <td th:text="${walkingAppResultDTOStat.count}"></td>
+	    <td th:text="${walkingAppResultDTO.successRate}"></td>
+	    <td th:text="${walkingAppResultDTO.sessionTime}"></td>
+	    <td th:text="${walkingAppResultDTO.sessionDate}"></td>
+	  </tr>
+	</table> 
+				
+	</body>
+</html>

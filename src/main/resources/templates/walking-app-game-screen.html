@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+	  xmlns:th="http://www.thymeleaf.org"
+	  xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+<meta charset="UTF-8">
+<title>Walking App</title>
+
+    <style>
+
+        .center {
+            text-align: center;
+        }
+
+        .top-bar {
+            background-color: grey;
+            margin-top: -20px;
+        }
+
+        .form {
+            margin-top: -50px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .stop-btn {
+            height:50px; 
+            width:100px;
+            margin-bottom: 20px;
+            margin-top: -30px;
+            margin-left: 45vw;
+            border-radius: 10%;
+            border: 3px solid black;
+            background-color: lightblue;
+            font-size: 16px;
+        }
+        .stop-btn:hover {
+            cursor: pointer;
+            background-color: skyblue;
+        }
+
+        .session-info {
+            font-size: 50px;
+            padding-top: 10px;
+        }
+
+        .bad-steps-title {
+            text-align: left;
+            margin-left: 20px;
+            font-size: 30px;
+            margin-top: 20px;
+        }
+
+        .bad-steps-display {
+            text-align: left;
+            margin-left: 60px;
+            font-size: 50px;
+            margin-top: 20px;
+        }
+
+        .good-steps-title {
+            text-align: right;
+            font-size: 30px;
+            margin-right: 20px;
+            margin-top: -35px
+        }
+
+        .good-steps-display {
+            text-align: right;
+            font-size: 50px;
+            margin-right: 60px;
+            margin-top: -55px
+        }
+
+        body {
+            background-image: url("images/WalkingAppBackground.svg");
+            background-repeat: no-repeat;
+            background-size: cover;
+        }
+    
+    </style>
+    
+</head>
+
+<body>
+
+<div class="top-bar">
+<h6>&nbsp</h6>
+<div class="bad-steps-title">Bad Steps</div>
+    <div class="good-steps-title">Good Steps</div>
+    
+<!-- Form to Post Data to Database -->
+        
+  	<form action="#" th:action="@{/processWalkingAppResult}" th:object="${walkingAppResult}" method="post">
+		<input type="hidden" th:field="*{id}">
+		<input id="successRateInput" type="hidden" th:field="*{successRate}" value=" " />
+		<input id="sessionTimeInput" type="hidden" th:field="*{sessionTime}" value=" " />
+		<input id="sessionDateInput" type="hidden" th:field="*{sessionDate}" value=" " />
+		<button id="stopSession" type="submit" name="save" onclick="sendData()" class="stop-btn">Stop</button>
+	</form>
+
+    </div>
+
+    <div id="bad-steps-display" class="bad-steps-display">0</div>
+    <div id="good-steps-display" class="good-steps-display">0</div>
+    
+    <!-- Session Display -->
+    <div class="center">
+        <div class="clock-title session-info">Time</div>
+        <div class="clock session-info" id="clock">0:0</div>
+        <div class="feedback session-info" id="feedback">Start Walking</div>
+    </div>
+
+    <img id="game-graphic" style="height:70vh; margin-left:260px; margin-top:-145px" src="images/LandedGraphic.svg" alt="Graphic">
+
+    <audio id="MissedSound">
+        <source src="sounds/WalkingAppMissed.mp3" type="audio/mpeg">
+    </audio>
+
+    <script>
+
+    // Session Global Variables
+    var landed = 0;
+    var missed = 0;
+    var sessionTime = "";
+    var date = new Date();
+    var sessionDate = date.getDate() + "/" + (date.getMonth()+1) + "/" + date.getFullYear();
+
+    // Timer
+    Timer();
+    var minutes = 0;
+    var seconds = 0;
+    function Timer() {
+        setTimeout(function () {
+            document.getElementById("clock").innerHTML = minutes + ":" + seconds;
+            seconds++;
+            if (seconds <= 59) {
+                Timer();
+            } else {
+                minutes++;
+                seconds = 0;
+                Timer()
+                }
+            }, 1000);
+            sessionTime = minutes + ":" + seconds;
+        }
+
+    var heelToeArray = [];
+    var missedSound = document.getElementById("MissedSound");
+    document.addEventListener("keyup", CONTROL);
+    function CONTROL(event) {
+        if (event.keyCode == 65) {
+            heelToeArray.push("heel");
+            document.getElementById("feedback").innerHTML = "heel";
+        } 
+        else if (event.keyCode == 66) {
+            document.getElementById("feedback").innerHTML = "toe";
+            heelToeArray.push("toe");
+            if (heelToeArray[heelToeArray.length-2] == "heel") {
+                landed++;
+                document.getElementById("good-steps-display").innerHTML = landed;
+                document.getElementById("game-graphic").src = "images/LandedGraphic.svg"
+                document.body.style.backgroundImage = "url('images/WalkingAppBackground.svg')";
+            }
+            else {
+                missed++;
+                document.getElementById("bad-steps-display").innerHTML = missed;
+                document.getElementById("game-graphic").src = "images/MissedGraphic.svg"
+                document.body.style.backgroundImage = "url('images/WalkingAppBackgroundMissed.svg')";
+                missedSound.play();
+                
+            }
+            console.log(heelToeArray);
+            }
+        }
+
+    // Function to send session data to results screen
+    function sendData() {
+        var successRate = Math.round((landed / (landed + missed) * 100));
+        document.getElementById("successRateInput").value = successRate;
+        document.getElementById("sessionTimeInput").value = sessionTime;
+        document.getElementById("sessionDateInput").value = sessionDate;
+    }
+
+    </script>
+    
+</body>
+
+</html>
